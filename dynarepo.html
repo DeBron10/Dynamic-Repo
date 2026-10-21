@@ -1,0 +1,2425 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Report Builder</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6fa;
+            color: #263247;
+            overflow: hidden;
+        }
+
+        button, input, select {
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            padding: 9px 13px;
+        }
+
+        .app {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 210px;
+            flex-shrink: 0;
+            background: #172b4d;
+            color: white;
+            padding: 22px 14px;
+        }
+
+        .brand {
+            font-size: 19px;
+            font-weight: bold;
+            margin-bottom: 35px;
+        }
+
+        .brand-subtitle {
+            font-size: 11px;
+            color: #b9c9e1;
+            margin-top: 5px;
+            font-weight: normal;
+        }
+
+        .nav-heading {
+            color: #aabbd4;
+            font-size: 10px;
+            text-transform: uppercase;
+            margin: 20px 10px 10px;
+        }
+
+        .nav-item {
+            padding: 12px 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            color: #e0e8f4;
+            font-size: 13px;
+        }
+
+        .nav-item.active {
+            background: #2d4770;
+        }
+
+        .main {
+            flex: 1;
+            min-width: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            height: 58px;
+            flex-shrink: 0;
+            background: white;
+            border-bottom: 1px solid #e1e5ec;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+        }
+
+        .breadcrumb {
+            color: #778398;
+            font-size: 12px;
+        }
+
+        .page-content {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 16px 22px;
+            gap: 12px;
+        }
+
+        .page-heading {
+            flex-shrink: 0;
+        }
+
+        .page-heading h1 {
+            margin: 0 0 7px;
+            font-size: 23px;
+            color: #172b4d;
+        }
+
+        .page-heading p {
+            margin: 0;
+            color: #68758a;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .builder {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .builder.hidden {
+            display: none;
+        }
+
+        .panel {
+            background: white;
+            border: 1px solid #e1e5ec;
+            border-radius: 8px;
+            padding: 12px 15px;
+        }
+
+        .panel-heading {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .step {
+            width: 23px;
+            height: 23px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: #eaf1ff;
+            color: #1769d2;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .description {
+            color: #778398;
+            font-size: 12px;
+            margin: 0 0 10px 31px;
+            line-height: 1.4;
+        }
+
+        .source-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 9px 12px;
+            background: #f8faff;
+            border: 1px solid #e5eaf3;
+            border-radius: 6px;
+        }
+
+        .source-icon {
+            background: #e5edff;
+            color: #1769d2;
+            border-radius: 6px;
+            padding: 10px;
+        }
+
+        .source-details {
+            flex: 1;
+        }
+
+        .source-name {
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .source-caption {
+            font-size: 11px;
+            color: #778398;
+            margin-top: 4px;
+        }
+
+        .source-status {
+            font-size: 11px;
+            color: #237444;
+            background: #e5f5eb;
+            border-radius: 12px;
+            padding: 5px 8px;
+        }
+
+        .field-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .field-count {
+            font-size: 11px;
+            color: #68758a;
+        }
+
+        .text-button {
+            background: transparent;
+            color: #1769d2;
+            padding: 4px;
+        }
+
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 7px;
+            max-height: 90px;
+            overflow-y: auto;
+        }
+
+        .field-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #e1e5ec;
+            border-radius: 5px;
+            padding: 8px;
+            font-size: 12px;
+            min-width: 0;
+        }
+
+        .field-option input {
+            margin: 0;
+            accent-color: #1769d2;
+        }
+
+        .field-option label {
+            cursor: pointer;
+            overflow-wrap: anywhere;
+        }
+
+        .filter-list {
+            max-height: 155px;
+            overflow-y: auto;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: minmax(130px, 1fr) minmax(140px, 1.1fr) minmax(180px, 1.6fr) 35px;
+            gap: 8px;
+            align-items: start;
+            padding: 8px 0;
+            border-bottom: 1px solid #edf0f5;
+        }
+
+        .filter-row select,
+        .filter-row input {
+            width: 100%;
+            min-width: 0;
+            border: 1px solid #d9dfe9;
+            border-radius: 5px;
+            padding: 8px;
+            background: white;
+            color: #263247;
+        }
+
+        .filter-row select[multiple] {
+            height: 76px;
+        }
+
+        .filter-row .range-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-row .range-inputs input {
+            width: 100%;
+        }
+
+        .filter-row .value-help {
+            color: #778398;
+            font-size: 10px;
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+
+        .remove-button {
+            background: #fff0f0;
+            color: #b52c2c;
+            padding: 8px;
+        }
+
+        .filter-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-top: 9px;
+        }
+
+        .filter-help {
+            color: #778398;
+            font-size: 11px;
+        }
+
+        .primary-button {
+            background: #1769d2;
+            color: white;
+        }
+
+        .secondary-button {
+            background: #edf1f7;
+            color: #34445d;
+        }
+
+        .report-area {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .report-toolbar {
+            flex-shrink: 0;
+            background: white;
+            border: 1px solid #e1e5ec;
+            border-radius: 8px 8px 0 0;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .report-title {
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .report-description {
+            font-size: 11px;
+            color: #778398;
+            margin-top: 4px;
+        }
+
+        .report-actions {
+            display: flex;
+            gap: 7px;
+        }
+
+        .report-summary {
+            flex-shrink: 0;
+            display: flex;
+            gap: 28px;
+            padding: 9px 15px;
+            background: white;
+            border-left: 1px solid #e1e5ec;
+            border-right: 1px solid #e1e5ec;
+        }
+
+        .summary-item {
+            color: #778398;
+            font-size: 11px;
+        }
+
+        .summary-value {
+            font-size: 14px;
+            font-weight: bold;
+            color: #263247;
+            margin-top: 4px;
+        }
+
+        .table-container {
+            flex: 1;
+            min-height: 0;
+            overflow: auto;
+            background: white;
+            border: 1px solid #e1e5ec;
+            border-radius: 0 0 8px 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            white-space: nowrap;
+        }
+
+        th, td {
+            padding: 11px 14px;
+            text-align: left;
+            font-size: 12px;
+            border-bottom: 1px solid #e9edf3;
+        }
+
+        th {
+            background: #f5f7fb;
+            color: #526178;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        tbody tr:hover {
+            background: #f8faff;
+        }
+
+        .status-label {
+            display: inline-block;
+            border-radius: 12px;
+            padding: 4px 8px;
+            font-size: 11px;
+        }
+
+        .status-completed {
+            background: #e5f5eb;
+            color: #237444;
+        }
+
+        .status-progress {
+            background: #fff3d9;
+            color: #8c6500;
+        }
+
+        .status-pending {
+            background: #edf1f7;
+            color: #526178;
+        }
+
+        .empty-state {
+            padding: 30px 20px;
+            text-align: center;
+            color: #778398;
+            white-space: normal;
+            line-height: 1.6;
+        }
+
+        .empty-title {
+            font-weight: bold;
+            color: #34445d;
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 850px) {
+            .sidebar {
+                width: 65px;
+                padding: 15px 6px;
+            }
+
+            .brand {
+                font-size: 11px;
+                overflow-wrap: anywhere;
+            }
+
+            .nav-heading {
+                display: none;
+            }
+
+            .nav-item {
+                padding: 9px 4px;
+                font-size: 10px;
+                overflow-wrap: anywhere;
+            }
+
+            .page-content {
+                padding: 12px;
+            }
+
+            .field-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .filter-row {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .filter-row .filter-value {
+                grid-column: 1 / 3;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <aside class="sidebar">
+        <div class="brand">
+            Data Workspace
+            <div class="brand-subtitle">Reporting Portal</div>
+        </div>
+
+        <div class="nav-heading">Workspace</div>
+        <div class="nav-item">Dashboard</div>
+        <div class="nav-item active">Custom Reports</div>
+        <div class="nav-item">Saved Reports</div>
+
+        <div class="nav-heading">Manage</div>
+        <div class="nav-item">Data Sources</div>
+        <div class="nav-item">Settings</div>
+    </aside>
+
+    <main class="main">
+
+        <header class="topbar">
+            <div class="breadcrumb">Workspace / Custom Reports</div>
+            <div>Reporting Workspace</div>
+        </header>
+
+        <div class="page-content">
+
+            <section class="page-heading">
+                <h1>Custom Report Builder</h1>
+                <p>
+                    Select the information you need, filter records using
+                    specific conditions, and generate a report for review
+                    or export.
+                </p>
+            </section>
+
+            <section class="builder" id="builder">
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <span class="step">1</span>
+                        Choose a Data Source
+                    </div>
+
+                    <p class="description">
+                        Select the source containing the information
+                        you want to report on.
+                    </p>
+
+                    <div class="source-row">
+                        <div class="source-icon">&#9638;</div>
+
+                        <div class="source-details">
+                            <div class="source-name">Project Details</div>
+                            <div class="source-caption">
+                                Project dates, costs, categories, places and status
+                            </div>
+                        </div>
+
+                        <div class="source-status">Selected</div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <span class="step">2</span>
+                        Select Data Fields
+                    </div>
+
+                    <p class="description">
+                        Choose the fields to display in your report.
+                    </p>
+
+                    <div class="field-toolbar">
+                        <div class="field-count" id="fieldCount">
+                            0 fields selected
+                        </div>
+
+                        <button class="text-button"
+                                onclick="clearFieldSelection()">
+                            Clear selection
+                        </button>
+                    </div>
+
+                    <div class="field-grid" id="fieldList"></div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-heading">
+                        <span class="step">3</span>
+                        Filter Your Data
+                    </div>
+
+                    <p class="description">
+                        Filter options adjust automatically to the field
+                        you choose. Select multiple values for Category,
+                        Place and Status.
+                    </p>
+
+                    <div class="filter-list" id="filterList"></div>
+
+                    <div class="filter-actions">
+                        <div class="filter-help">
+                            Add one or more conditions to narrow your results.
+                        </div>
+
+                        <button class="secondary-button"
+                                onclick="addFilter()">
+                            + Add Filter
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:8px;">
+                    <button class="secondary-button"
+                            onclick="resetBuilder()">
+                        Clear All
+                    </button>
+
+                    <button class="primary-button"
+                            onclick="generateReport()">
+                        Generate Report
+                    </button>
+                </div>
+
+            </section>
+
+            <section class="report-area">
+
+                <div class="report-toolbar">
+                    <div>
+                        <div class="report-title">Report Preview</div>
+                        <div class="report-description" id="reportDescription">
+                            Your generated report will appear here.
+                        </div>
+                    </div>
+
+                    <div class="report-actions">
+                        <button class="secondary-button"
+                                onclick="toggleBuilder()">
+                            Show / Hide Builder
+                        </button>
+
+                        <button class="secondary-button"
+                                onclick="exportCSV()">
+                            Export to CSV
+                        </button>
+                    </div>
+                </div>
+
+                <div class="report-summary">
+                    <div class="summary-item">
+                        Records Found
+                        <div class="summary-value" id="recordCount">0</div>
+                    </div>
+
+                    <div class="summary-item">
+                        Fields Included
+                        <div class="summary-value" id="selectedFieldCount">0</div>
+                    </div>
+
+                    <div class="summary-item">
+                        Active Filters
+                        <div class="summary-value" id="activeFilterCount">0</div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="reportTable">
+                        <thead>
+                            <tr><th>Report Preview</th></tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="empty-state">
+                                        <div class="empty-title">
+                                            Ready to build your report?
+                                        </div>
+                                        Select data fields and add filters,
+                                        then click Generate Report.
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+</div>
+
+<script>
+
+    /*
+        STEP 1: SAMPLE DATA SOURCE
+
+        In the future, the rows and available filter values
+        can come from your database through an AJAX request.
+    */
+
+    var tables = {
+
+        projectDetails: {
+
+            name: "Project Details",
+
+            columns: [
+
+                {
+                    name: "Project ID",
+                    key: "projectId",
+                    type: "number"
+                },
+
+                {
+                    name: "Project Name",
+                    key: "projectName",
+                    type: "text"
+                },
+
+                {
+                    name: "Start Date",
+                    key: "startDate",
+                    type: "date"
+                },
+
+                {
+                    name: "Cost",
+                    key: "cost",
+                    type: "number"
+                },
+
+                {
+                    name: "Category",
+                    key: "category",
+                    type: "multi"
+                },
+
+                {
+                    name: "Place",
+                    key: "place",
+                    type: "multi"
+                },
+
+                {
+                    name: "Status",
+                    key: "status",
+                    type: "multi"
+                }
+
+            ],
+
+            rows: [
+
+                {
+                    projectId: 101,
+                    projectName: "Website Development",
+                    startDate: "2026-01-10",
+                    cost: 50000,
+                    category: "IT",
+                    place: "Pune",
+                    status: "Completed"
+                },
+
+                {
+                    projectId: 102,
+                    projectName: "Office Renovation",
+                    startDate: "2026-02-15",
+                    cost: 85000,
+                    category: "Construction",
+                    place: "Mumbai",
+                    status: "In Progress"
+                },
+
+                {
+                    projectId: 103,
+                    projectName: "Mobile Application",
+                    startDate: "2026-03-05",
+                    cost: 70000,
+                    category: "IT",
+                    place: "Pune",
+                    status: "Pending"
+                },
+
+                {
+                    projectId: 104,
+                    projectName: "Road Repair",
+                    startDate: "2026-04-12",
+                    cost: 40000,
+                    category: "Construction",
+                    place: "Nashik",
+                    status: "Completed"
+                },
+
+                {
+                    projectId: 105,
+                    projectName: "Data Migration",
+                    startDate: "2026-05-20",
+                    cost: 60000,
+                    category: "IT",
+                    place: "Mumbai",
+                    status: "In Progress"
+                },
+
+                {
+                    projectId: 106,
+                    projectName: "School Renovation",
+                    startDate: "2026-06-10",
+                    cost: 95000,
+                    category: "Education",
+                    place: "Pune",
+                    status: "Pending"
+                },
+
+                {
+                    projectId: 107,
+                    projectName: "Water Supply Project",
+                    startDate: "2026-07-01",
+                    cost: 120000,
+                    category: "Infrastructure",
+                    place: "Nagpur",
+                    status: "In Progress"
+                },
+
+                {
+                    projectId: 108,
+                    projectName: "Hospital Upgrade",
+                    startDate: "2026-08-18",
+                    cost: 150000,
+                    category: "Healthcare",
+                    place: "Mumbai",
+                    status: "Completed"
+                }
+
+            ]
+
+        }
+
+    };
+
+
+    /*
+        STEP 2: STORE USER SELECTIONS
+    */
+
+    var selectedTables = ["projectDetails"];
+
+    var selectedColumns = [];
+
+    var filters = [];
+
+    var nextFilterId = 1;
+
+    var reportRows = [];
+
+    var reportColumns = [];
+
+
+    /*
+        STEP 3: DISPLAY AVAILABLE DATA FIELDS
+    */
+
+    function displayFields() {
+
+        var fieldList = document.getElementById("fieldList");
+
+        fieldList.innerHTML = "";
+
+        var tableIndex;
+
+        for (tableIndex = 0;
+             tableIndex < selectedTables.length;
+             tableIndex++) {
+
+            var tableKey = selectedTables[tableIndex];
+
+            var currentTable = tables[tableKey];
+
+            var columnIndex;
+
+            for (columnIndex = 0;
+                 columnIndex < currentTable.columns.length;
+                 columnIndex++) {
+
+                var column = currentTable.columns[columnIndex];
+
+                var fullColumnKey = tableKey + "." + column.key;
+
+                var checkbox = document.createElement("input");
+
+                checkbox.type = "checkbox";
+                checkbox.id = "field_" + fullColumnKey;
+                checkbox.value = fullColumnKey;
+
+                checkbox.checked = isFieldSelected(fullColumnKey);
+
+                var label = document.createElement("label");
+
+                label.htmlFor = checkbox.id;
+                label.textContent = column.name;
+
+                var fieldOption = document.createElement("div");
+
+                fieldOption.className = "field-option";
+
+                fieldOption.appendChild(checkbox);
+                fieldOption.appendChild(label);
+
+                fieldList.appendChild(fieldOption);
+
+                checkbox.onchange = function () {
+
+                    readSelectedFields();
+
+                };
+
+            }
+
+        }
+
+        updateFieldCount();
+
+    }
+
+
+    /*
+        STEP 4: CHECK WHETHER A FIELD IS SELECTED
+    */
+
+    function isFieldSelected(fieldKey) {
+
+        var i;
+
+        for (i = 0; i < selectedColumns.length; i++) {
+
+            if (selectedColumns[i] === fieldKey) {
+
+                return true;
+
+            }
+
+        }
+
+        return false;
+
+    }
+
+
+    /*
+        STEP 5: READ SELECTED FIELDS
+    */
+
+    function readSelectedFields() {
+
+        selectedColumns = [];
+
+        var fieldList = document.getElementById("fieldList");
+
+        var checkboxes = fieldList.getElementsByTagName("input");
+
+        var i;
+
+        for (i = 0; i < checkboxes.length; i++) {
+
+            if (checkboxes[i].checked === true) {
+
+                selectedColumns.push(checkboxes[i].value);
+
+            }
+
+        }
+
+        updateFieldCount();
+
+    }
+
+
+    function updateFieldCount() {
+
+        document.getElementById("fieldCount").textContent =
+            selectedColumns.length + " fields selected";
+
+        document.getElementById("selectedFieldCount").textContent =
+            selectedColumns.length;
+
+    }
+
+
+    function clearFieldSelection() {
+
+        selectedColumns = [];
+
+        displayFields();
+
+    }
+
+
+    /*
+        STEP 6: FIND DETAILS FOR A FIELD
+
+        Example:
+        projectDetails.cost
+
+        Table key: projectDetails
+        Column key: cost
+    */
+
+    function getColumnDetails(fullColumnKey) {
+
+        if (fullColumnKey === "") {
+
+            return null;
+
+        }
+
+        var parts = fullColumnKey.split(".");
+
+        var tableKey = parts[0];
+
+        var columnKey = parts[1];
+
+        var currentTable = tables[tableKey];
+
+        if (currentTable === undefined) {
+
+            return null;
+
+        }
+
+        var i;
+
+        for (i = 0; i < currentTable.columns.length; i++) {
+
+            if (currentTable.columns[i].key === columnKey) {
+
+                return currentTable.columns[i];
+
+            }
+
+        }
+
+        return null;
+
+    }
+
+
+    /*
+        STEP 7: GET DISTINCT VALUES FOR CATEGORY, PLACE OR STATUS
+
+        This sample function reads values from the sample rows.
+        Later, these values can be supplied by your backend.
+    */
+
+    function getAvailableValues(fullColumnKey) {
+
+        var values = [];
+
+        var parts = fullColumnKey.split(".");
+
+        var tableKey = parts[0];
+
+        var columnKey = parts[1];
+
+        var currentTable = tables[tableKey];
+
+        var rowIndex;
+
+        for (rowIndex = 0;
+             rowIndex < currentTable.rows.length;
+             rowIndex++) {
+
+            var value = currentTable.rows[rowIndex][columnKey];
+
+            var alreadyExists = false;
+
+            var valueIndex;
+
+            for (valueIndex = 0;
+                 valueIndex < values.length;
+                 valueIndex++) {
+
+                if (values[valueIndex] === value) {
+
+                    alreadyExists = true;
+
+                }
+
+            }
+
+            if (alreadyExists === false) {
+
+                values.push(value);
+
+            }
+
+        }
+
+        values.sort();
+
+        return values;
+
+    }
+
+
+    /*
+        STEP 8: ADD A FILTER
+    */
+
+    function addFilter() {
+
+        var newFilter = {
+
+            id: nextFilterId,
+
+            columnKey: "",
+
+            condition: "=",
+
+            value: "",
+
+            value2: "",
+
+            selectedValues: []
+
+        };
+
+        nextFilterId = nextFilterId + 1;
+
+        filters.push(newFilter);
+
+        displayFilters();
+
+    }
+
+
+    /*
+        STEP 9: DISPLAY FILTERS ACCORDING TO THE SELECTED FIELD
+    */
+
+    function displayFilters() {
+
+        var filterList = document.getElementById("filterList");
+
+        filterList.innerHTML = "";
+
+        var i;
+
+        for (i = 0; i < filters.length; i++) {
+
+            var filter = filters[i];
+
+            var filterRow = document.createElement("div");
+
+            filterRow.className = "filter-row";
+
+            /*
+                FIELD DROPDOWN
+            */
+
+            var fieldSelect = document.createElement("select");
+
+            fieldSelect.id = "filterField_" + filter.id;
+
+            var emptyOption = document.createElement("option");
+
+            emptyOption.value = "";
+            emptyOption.textContent = "Choose a field";
+
+            fieldSelect.appendChild(emptyOption);
+
+            var tableIndex;
+
+            for (tableIndex = 0;
+                 tableIndex < selectedTables.length;
+                 tableIndex++) {
+
+                var tableKey = selectedTables[tableIndex];
+
+                var currentTable = tables[tableKey];
+
+                var columnIndex;
+
+                for (columnIndex = 0;
+                     columnIndex < currentTable.columns.length;
+                     columnIndex++) {
+
+                    var column = currentTable.columns[columnIndex];
+
+                    var option = document.createElement("option");
+
+                    option.value = tableKey + "." + column.key;
+
+                    option.textContent = column.name;
+
+                    fieldSelect.appendChild(option);
+
+                }
+
+            }
+
+            fieldSelect.value = filter.columnKey;
+
+            fieldSelect.onchange = function () {
+
+                readFilterValues();
+
+                displayFilters();
+
+            };
+
+            filterRow.appendChild(fieldSelect);
+
+
+            /*
+                GET THE TYPE OF THE SELECTED FIELD
+            */
+
+            var columnDetails = getColumnDetails(filter.columnKey);
+
+            var fieldType = "";
+
+            if (columnDetails !== null) {
+
+                fieldType = columnDetails.type;
+
+            }
+
+
+            /*
+                CONDITION DROPDOWN
+
+                Number: Greater than, Less than, Equal to, Between.
+                Date: Between.
+                Multi-select: In selected values.
+                Text: Contains, Equal to.
+            */
+
+            var conditionSelect = document.createElement("select");
+
+            conditionSelect.id = "filterCondition_" + filter.id;
+
+            if (fieldType === "number") {
+
+                addCondition(conditionSelect, ">", "Greater than");
+                addCondition(conditionSelect, "<", "Less than");
+                addCondition(conditionSelect, "=", "Equal to");
+                addCondition(conditionSelect, "between", "Between");
+
+            } else if (fieldType === "date") {
+
+                addCondition(conditionSelect, "between", "Between");
+
+            } else if (fieldType === "multi") {
+
+                addCondition(conditionSelect, "in", "Is any of");
+
+            } else if (fieldType === "text") {
+
+                addCondition(conditionSelect, "contains", "Contains");
+                addCondition(conditionSelect, "=", "Equal to");
+
+            } else {
+
+                addCondition(conditionSelect, "", "Choose a field first");
+
+            }
+
+            conditionSelect.value = filter.condition;
+
+            conditionSelect.onchange = function () {
+
+                readFilterValues();
+
+                displayFilters();
+
+            };
+
+            filterRow.appendChild(conditionSelect);
+
+
+            /*
+                VALUE INPUTS
+
+                Different fields have different controls.
+            */
+
+            var valueContainer = document.createElement("div");
+
+            valueContainer.className = "filter-value";
+
+            if (fieldType === "number" &&
+                filter.condition === "between") {
+
+                /*
+                    NUMBER RANGE
+                */
+
+                var numberRange = document.createElement("div");
+
+                numberRange.className = "range-inputs";
+
+                var numberFrom = document.createElement("input");
+
+                numberFrom.type = "number";
+                numberFrom.id = "filterValue_" + filter.id;
+                numberFrom.placeholder = "Minimum cost";
+                numberFrom.value = filter.value;
+
+                numberFrom.oninput = function () {
+
+                    readFilterValues();
+
+                };
+
+                var numberTo = document.createElement("input");
+
+                numberTo.type = "number";
+                numberTo.id = "filterValue2_" + filter.id;
+                numberTo.placeholder = "Maximum cost";
+                numberTo.value = filter.value2;
+
+                numberTo.oninput = function () {
+
+                    readFilterValues();
+
+                };
+
+                numberRange.appendChild(numberFrom);
+                numberRange.appendChild(numberTo);
+
+                valueContainer.appendChild(numberRange);
+
+            } else if (fieldType === "date") {
+
+                /*
+                    DATE RANGE
+                */
+
+                var dateRange = document.createElement("div");
+
+                dateRange.className = "range-inputs";
+
+                var dateFrom = document.createElement("input");
+
+                dateFrom.type = "date";
+                dateFrom.id = "filterValue_" + filter.id;
+                dateFrom.value = filter.value;
+
+                dateFrom.onchange = function () {
+
+                    readFilterValues();
+
+                };
+
+                var dateTo = document.createElement("input");
+
+                dateTo.type = "date";
+                dateTo.id = "filterValue2_" + filter.id;
+                dateTo.value = filter.value2;
+
+                dateTo.onchange = function () {
+
+                    readFilterValues();
+
+                };
+
+                dateRange.appendChild(dateFrom);
+                dateRange.appendChild(dateTo);
+
+                valueContainer.appendChild(dateRange);
+
+                var dateHelp = document.createElement("div");
+
+                dateHelp.className = "value-help";
+                dateHelp.textContent = "Select the start date and end date.";
+
+                valueContainer.appendChild(dateHelp);
+
+            } else if (fieldType === "multi") {
+
+                /*
+                    MULTI-SELECT VALUES
+
+                    Used for Category, Place and Status.
+                */
+
+                var multiSelect = document.createElement("select");
+
+                multiSelect.id = "filterValues_" + filter.id;
+                multiSelect.multiple = true;
+
+                var availableValues = getAvailableValues(filter.columnKey);
+
+                var valueIndex;
+
+                for (valueIndex = 0;
+                     valueIndex < availableValues.length;
+                     valueIndex++) {
+
+                    var multiOption = document.createElement("option");
+
+                    multiOption.value = availableValues[valueIndex];
+
+                    multiOption.textContent = availableValues[valueIndex];
+
+                    if (isValueSelected(
+                        filter.selectedValues,
+                        availableValues[valueIndex]
+                    ) === true) {
+
+                        multiOption.selected = true;
+
+                    }
+
+                    multiSelect.appendChild(multiOption);
+
+                }
+
+                multiSelect.onchange = function () {
+
+                    readFilterValues();
+
+                };
+
+                valueContainer.appendChild(multiSelect);
+
+                var multiHelp = document.createElement("div");
+
+                multiHelp.className = "value-help";
+                multiHelp.textContent =
+                    "Hold Ctrl on Windows to select multiple values.";
+
+                valueContainer.appendChild(multiHelp);
+
+            } else if (fieldType === "number") {
+
+                /*
+                    SINGLE NUMBER
+                */
+
+                var numberInput = document.createElement("input");
+
+                numberInput.type = "number";
+                numberInput.id = "filterValue_" + filter.id;
+                numberInput.placeholder = "Enter an amount";
+                numberInput.value = filter.value;
+
+                numberInput.oninput = function () {
+
+                    readFilterValues();
+
+                };
+
+                valueContainer.appendChild(numberInput);
+
+            } else if (fieldType === "text") {
+
+                /*
+                    TEXT VALUE
+                */
+
+                var textInput = document.createElement("input");
+
+                textInput.type = "text";
+                textInput.id = "filterValue_" + filter.id;
+                textInput.placeholder = "Enter text";
+                textInput.value = filter.value;
+
+                textInput.oninput = function () {
+
+                    readFilterValues();
+
+                };
+
+                valueContainer.appendChild(textInput);
+
+            } else {
+
+                var fieldHelp = document.createElement("div");
+
+                fieldHelp.className = "value-help";
+                fieldHelp.textContent = "Choose a field to configure its filter.";
+
+                valueContainer.appendChild(fieldHelp);
+
+            }
+
+            filterRow.appendChild(valueContainer);
+
+
+            /*
+                REMOVE FILTER BUTTON
+            */
+
+            var removeButton = document.createElement("button");
+
+            removeButton.className = "remove-button";
+            removeButton.textContent = "X";
+
+            removeButton.setAttribute("data-filter-id", filter.id);
+
+            removeButton.onclick = function () {
+
+                var filterId = parseInt(
+                    this.getAttribute("data-filter-id"), 10
+                );
+
+                removeFilter(filterId);
+
+            };
+
+            filterRow.appendChild(removeButton);
+
+            filterList.appendChild(filterRow);
+
+        }
+
+        updateSummary();
+
+    }
+
+
+    /*
+        HELPER: ADD A CONDITION OPTION
+    */
+
+    function addCondition(selectElement, value, label) {
+
+        var option = document.createElement("option");
+
+        option.value = value;
+        option.textContent = label;
+
+        selectElement.appendChild(option);
+
+    }
+
+
+    /*
+        HELPER: CHECK WHETHER A MULTI-SELECT VALUE IS SELECTED
+    */
+
+    function isValueSelected(selectedValues, value) {
+
+        var i;
+
+        for (i = 0; i < selectedValues.length; i++) {
+
+            if (selectedValues[i] === value) {
+
+                return true;
+
+            }
+
+        }
+
+        return false;
+
+    }
+
+
+    /*
+        STEP 10: READ VALUES FROM THE FILTER CONTROLS
+    */
+
+    function readFilterValues() {
+
+        var i;
+
+        for (i = 0; i < filters.length; i++) {
+
+            var filter = filters[i];
+
+            var fieldSelect = document.getElementById(
+                "filterField_" + filter.id
+            );
+
+            var conditionSelect = document.getElementById(
+                "filterCondition_" + filter.id
+            );
+
+            if (fieldSelect !== null) {
+
+                filter.columnKey = fieldSelect.value;
+
+            }
+
+            if (conditionSelect !== null) {
+
+                filter.condition = conditionSelect.value;
+
+            }
+
+            var valueInput = document.getElementById(
+                "filterValue_" + filter.id
+            );
+
+            if (valueInput !== null) {
+
+                filter.value = valueInput.value;
+
+            } else {
+
+                filter.value = "";
+
+            }
+
+            var valueInput2 = document.getElementById(
+                "filterValue2_" + filter.id
+            );
+
+            if (valueInput2 !== null) {
+
+                filter.value2 = valueInput2.value;
+
+            } else {
+
+                filter.value2 = "";
+
+            }
+
+            /*
+                Read the selected Category, Place or Status values.
+            */
+
+            var multiSelect = document.getElementById(
+                "filterValues_" + filter.id
+            );
+
+            if (multiSelect !== null) {
+
+                filter.selectedValues = [];
+
+                var optionIndex;
+
+                for (optionIndex = 0;
+                     optionIndex < multiSelect.options.length;
+                     optionIndex++) {
+
+                    if (multiSelect.options[optionIndex].selected === true) {
+
+                        filter.selectedValues.push(
+                            multiSelect.options[optionIndex].value
+                        );
+
+                    }
+
+                }
+
+            } else {
+
+                filter.selectedValues = [];
+
+            }
+
+        }
+
+        updateSummary();
+
+    }
+
+
+    /*
+        STEP 11: REMOVE A FILTER
+    */
+
+    function removeFilter(filterId) {
+
+        var remainingFilters = [];
+
+        var i;
+
+        for (i = 0; i < filters.length; i++) {
+
+            if (filters[i].id !== filterId) {
+
+                remainingFilters.push(filters[i]);
+
+            }
+
+        }
+
+        filters = remainingFilters;
+
+        displayFilters();
+
+    }
+
+
+    /*
+        STEP 12: COUNT ACTIVE FILTERS
+    */
+
+    function updateSummary() {
+
+        document.getElementById("selectedFieldCount").textContent =
+            selectedColumns.length;
+
+        var activeCount = 0;
+
+        var i;
+
+        for (i = 0; i < filters.length; i++) {
+
+            var filter = filters[i];
+
+            if (filter.columnKey === "") {
+
+                continue;
+
+            }
+
+            if (filter.condition === "in") {
+
+                if (filter.selectedValues.length > 0) {
+
+                    activeCount = activeCount + 1;
+
+                }
+
+            } else if (filter.condition === "between") {
+
+                if (filter.value !== "" && filter.value2 !== "") {
+
+                    activeCount = activeCount + 1;
+
+                }
+
+            } else {
+
+                if (filter.value !== "") {
+
+                    activeCount = activeCount + 1;
+
+                }
+
+            }
+
+        }
+
+        document.getElementById("activeFilterCount").textContent =
+            activeCount;
+
+    }
+
+
+    /*
+        STEP 13: CHECK WHETHER ONE RECORD MATCHES ONE FILTER
+    */
+
+    function recordMatchesFilter(record, filter) {
+
+        var parts = filter.columnKey.split(".");
+
+        var columnKey = parts[1];
+
+        var columnDetails = getColumnDetails(filter.columnKey);
+
+        var recordValue = record[columnKey];
+
+        /*
+            CATEGORY, PLACE AND STATUS
+
+            The record matches if its value is one of the selected values.
+        */
+
+        if (filter.condition === "in") {
+
+            if (filter.selectedValues.length === 0) {
+
+                return true;
+
+            }
+
+            var i;
+
+            for (i = 0; i < filter.selectedValues.length; i++) {
+
+                if (String(recordValue) ===
+                    String(filter.selectedValues[i])) {
+
+                    return true;
+
+                }
+
+            }
+
+            return false;
+
+        }
+
+
+        /*
+            DATE RANGE
+
+            The record date must be between the selected dates.
+        */
+
+        if (columnDetails.type === "date") {
+
+            if (filter.value === "" || filter.value2 === "") {
+
+                return true;
+
+            }
+
+            if (recordValue < filter.value) {
+
+                return false;
+
+            }
+
+            if (recordValue > filter.value2) {
+
+                return false;
+
+            }
+
+            return true;
+
+        }
+
+
+        /*
+            NUMERIC FILTERS
+        */
+
+        if (columnDetails.type === "number") {
+
+            if (filter.value === "") {
+
+                return true;
+
+            }
+
+            var numberValue = Number(recordValue);
+
+            var firstNumber = Number(filter.value);
+
+            if (filter.condition === ">") {
+
+                return numberValue > firstNumber;
+
+            } else if (filter.condition === "<") {
+
+                return numberValue < firstNumber;
+
+            } else if (filter.condition === "=") {
+
+                return numberValue === firstNumber;
+
+            } else if (filter.condition === "between") {
+
+                if (filter.value2 === "") {
+
+                    return true;
+
+                }
+
+                var secondNumber = Number(filter.value2);
+
+                return numberValue >= firstNumber &&
+                    numberValue <= secondNumber;
+
+            }
+
+        }
+
+
+        /*
+            TEXT FILTERS
+        */
+
+        if (columnDetails.type === "text") {
+
+            if (filter.value === "") {
+
+                return true;
+
+            }
+
+            var textValue = String(recordValue).toLowerCase();
+
+            var searchValue = String(filter.value).toLowerCase();
+
+            if (filter.condition === "contains") {
+
+                return textValue.indexOf(searchValue) !== -1;
+
+            } else if (filter.condition === "=") {
+
+                return textValue === searchValue;
+
+            }
+
+        }
+
+        return true;
+
+    }
+
+
+    /*
+        STEP 14: CHECK ALL FILTERS
+
+        Filters are combined using AND logic.
+        A record must satisfy every applicable filter.
+    */
+
+    function recordMatchesAllFilters(tableKey, record) {
+
+        var i;
+
+        for (i = 0; i < filters.length; i++) {
+
+            var filter = filters[i];
+
+            if (filter.columnKey === "") {
+
+                continue;
+
+            }
+
+            var parts = filter.columnKey.split(".");
+
+            var filterTableKey = parts[0];
+
+            if (filterTableKey !== tableKey) {
+
+                continue;
+
+            }
+
+            /*
+                An empty filter does not restrict the results.
+            */
+
+            if (filter.condition === "in") {
+
+                if (filter.selectedValues.length === 0) {
+
+                    continue;
+
+                }
+
+            } else if (filter.condition === "between") {
+
+                if (filter.value === "" || filter.value2 === "") {
+
+                    continue;
+
+                }
+
+            } else {
+
+                if (filter.value === "") {
+
+                    continue;
+
+                }
+
+            }
+
+            if (recordMatchesFilter(record, filter) === false) {
+
+                return false;
+
+            }
+
+        }
+
+        return true;
+
+    }
+
+
+    /*
+        STEP 15: GENERATE REPORT
+    */
+
+    function generateReport() {
+
+        readSelectedFields();
+
+        readFilterValues();
+
+        if (selectedColumns.length === 0) {
+
+            alert("Please select at least one data field.");
+
+            return;
+
+        }
+
+        /*
+            Validate numeric ranges.
+        */
+
+        var filterIndex;
+
+        for (filterIndex = 0;
+             filterIndex < filters.length;
+             filterIndex++) {
+
+            var filter = filters[filterIndex];
+
+            var columnDetails = getColumnDetails(filter.columnKey);
+
+            if (columnDetails === null) {
+
+                continue;
+
+            }
+
+            if (filter.condition === "between" &&
+                filter.value !== "" &&
+                filter.value2 !== "") {
+
+                if (columnDetails.type === "number") {
+
+                    if (Number(filter.value) > Number(filter.value2)) {
+
+                        alert("The minimum value cannot exceed the maximum value.");
+
+                        return;
+
+                    }
+
+                } else if (columnDetails.type === "date") {
+
+                    if (filter.value > filter.value2) {
+
+                        alert("The start date cannot be later than the end date.");
+
+                        return;
+
+                    }
+
+                }
+
+            }
+
+        }
+
+        reportRows = [];
+
+        reportColumns = [];
+
+        var columnIndex;
+
+        for (columnIndex = 0;
+             columnIndex < selectedColumns.length;
+             columnIndex++) {
+
+            reportColumns.push(selectedColumns[columnIndex]);
+
+        }
+
+        var tableIndex;
+
+        for (tableIndex = 0;
+             tableIndex < selectedTables.length;
+             tableIndex++) {
+
+            var tableKey = selectedTables[tableIndex];
+
+            var currentTable = tables[tableKey];
+
+            var rowIndex;
+
+            for (rowIndex = 0;
+                 rowIndex < currentTable.rows.length;
+                 rowIndex++) {
+
+                var record = currentTable.rows[rowIndex];
+
+                if (recordMatchesAllFilters(tableKey, record) === true) {
+
+                    reportRows.push({
+
+                        tableKey: tableKey,
+
+                        data: record
+
+                    });
+
+                }
+
+            }
+
+        }
+
+        displayReport();
+
+        document.getElementById("reportDescription").textContent =
+            "Report generated using your selected fields and filters.";
+
+        document.getElementById("builder").classList.add("hidden");
+
+    }
+
+
+    /*
+        STEP 16: DISPLAY REPORT RESULTS
+    */
+
+    function displayReport() {
+
+        var reportTable = document.getElementById("reportTable");
+
+        var headingHTML = "<thead><tr>";
+
+        var bodyHTML = "<tbody>";
+
+        var columnIndex;
+
+        for (columnIndex = 0;
+             columnIndex < reportColumns.length;
+             columnIndex++) {
+
+            var columnDetails = getColumnDetails(
+                reportColumns[columnIndex]
+            );
+
+            headingHTML = headingHTML + "<th>" +
+                escapeHTML(columnDetails.name) + "</th>";
+
+        }
+
+        headingHTML = headingHTML + "</tr></thead>";
+
+        var rowIndex;
+
+        for (rowIndex = 0;
+             rowIndex < reportRows.length;
+             rowIndex++) {
+
+            var reportRecord = reportRows[rowIndex];
+
+            bodyHTML = bodyHTML + "<tr>";
+
+            for (columnIndex = 0;
+                 columnIndex < reportColumns.length;
+                 columnIndex++) {
+
+                var fullColumnKey = reportColumns[columnIndex];
+
+                var parts = fullColumnKey.split(".");
+
+                var columnTableKey = parts[0];
+
+                var columnKey = parts[1];
+
+                var cellValue = "";
+
+                if (columnTableKey === reportRecord.tableKey) {
+
+                    cellValue = reportRecord.data[columnKey];
+
+                }
+
+                if (columnKey === "status" && cellValue !== "") {
+
+                    var statusClass = "status-pending";
+
+                    if (cellValue === "Completed") {
+
+                        statusClass = "status-completed";
+
+                    } else if (cellValue === "In Progress") {
+
+                        statusClass = "status-progress";
+
+                    }
+
+                    bodyHTML = bodyHTML +
+                        "<td><span class='status-label " +
+                        statusClass + "'>" +
+                        escapeHTML(String(cellValue)) +
+                        "</span></td>";
+
+                } else {
+
+                    bodyHTML = bodyHTML + "<td>" +
+                        escapeHTML(String(cellValue)) + "</td>";
+
+                }
+
+            }
+
+            bodyHTML = bodyHTML + "</tr>";
+
+        }
+
+        if (reportRows.length === 0) {
+
+            bodyHTML = bodyHTML +
+                "<tr><td colspan='" + reportColumns.length + "'>" +
+                "<div class='empty-state'>" +
+                "<div class='empty-title'>No records found</div>" +
+                "Try changing your filter conditions or selected values." +
+                "</div></td></tr>";
+
+        }
+
+        bodyHTML = bodyHTML + "</tbody>";
+
+        reportTable.innerHTML = headingHTML + bodyHTML;
+
+        document.getElementById("recordCount").textContent =
+            reportRows.length;
+
+    }
+
+
+    /*
+        STEP 17: ESCAPE VALUES BEFORE DISPLAYING THEM
+    */
+
+    function escapeHTML(value) {
+
+        var result = String(value);
+
+        result = result.replace(/&/g, "&amp;");
+        result = result.replace(/</g, "&lt;");
+        result = result.replace(/>/g, "&gt;");
+        result = result.replace(/"/g, "&quot;");
+        result = result.replace(/'/g, "&#39;");
+
+        return result;
+
+    }
+
+
+    /*
+        STEP 18: SHOW OR HIDE THE BUILDER
+    */
+
+    function toggleBuilder() {
+
+        var builder = document.getElementById("builder");
+
+        builder.classList.toggle("hidden");
+
+    }
+
+
+    /*
+        STEP 19: RESET EVERYTHING
+    */
+
+    function resetBuilder() {
+
+        selectedTables = ["projectDetails"];
+
+        selectedColumns = [];
+
+        filters = [];
+
+        nextFilterId = 1;
+
+        reportRows = [];
+
+        reportColumns = [];
+
+        document.getElementById("builder").classList.remove("hidden");
+
+        displayFields();
+
+        displayFilters();
+
+        document.getElementById("recordCount").textContent = "0";
+
+        document.getElementById("reportDescription").textContent =
+            "Your generated report will appear here.";
+
+        document.getElementById("reportTable").innerHTML =
+            "<thead><tr><th>Report Preview</th></tr></thead>" +
+            "<tbody><tr><td><div class='empty-state'>" +
+            "<div class='empty-title'>Ready to build your report?</div>" +
+            "Select data fields and add filters, then click Generate Report." +
+            "</div></td></tr></tbody>";
+
+        updateSummary();
+
+    }
+
+
+    /*
+        STEP 20: EXPORT REPORT TO CSV
+    */
+
+    function exportCSV() {
+
+        if (reportColumns.length === 0) {
+
+            alert("Generate a report before exporting.");
+
+            return;
+
+        }
+
+        var csvContent = "";
+
+        var columnIndex;
+
+        for (columnIndex = 0;
+             columnIndex < reportColumns.length;
+             columnIndex++) {
+
+            var columnDetails = getColumnDetails(
+                reportColumns[columnIndex]
+            );
+
+            var heading = columnDetails.name;
+
+            heading = heading.replace(/"/g, '""');
+
+            csvContent = csvContent + '"' + heading + '"';
+
+            if (columnIndex < reportColumns.length - 1) {
+
+                csvContent = csvContent + ",";
+
+            }
+
+        }
+
+        csvContent = csvContent + "\r\n";
+
+        var rowIndex;
+
+        for (rowIndex = 0;
+             rowIndex < reportRows.length;
+             rowIndex++) {
+
+            var reportRecord = reportRows[rowIndex];
+
+            for (columnIndex = 0;
+                 columnIndex < reportColumns.length;
+                 columnIndex++) {
+
+                var fullColumnKey = reportColumns[columnIndex];
+
+                var parts = fullColumnKey.split(".");
+
+                var columnTableKey = parts[0];
+
+                var columnKey = parts[1];
+
+                var cellValue = "";
+
+                if (columnTableKey === reportRecord.tableKey) {
+
+                    cellValue = reportRecord.data[columnKey];
+
+                }
+
+                cellValue = String(cellValue);
+
+                cellValue = cellValue.replace(/"/g, '""');
+
+                csvContent = csvContent + '"' + cellValue + '"';
+
+                if (columnIndex < reportColumns.length - 1) {
+
+                    csvContent = csvContent + ",";
+
+                }
+
+            }
+
+            csvContent = csvContent + "\r\n";
+
+        }
+
+        var csvFile = new Blob(
+            [csvContent],
+            { type: "text/csv;charset=utf-8;" }
+        );
+
+        var downloadUrl = URL.createObjectURL(csvFile);
+
+        var downloadLink = document.createElement("a");
+
+        downloadLink.href = downloadUrl;
+        downloadLink.download = "custom-report.csv";
+
+        document.body.appendChild(downloadLink);
+
+        downloadLink.click();
+
+        document.body.removeChild(downloadLink);
+
+        URL.revokeObjectURL(downloadUrl);
+
+    }
+
+
+    /*
+        STEP 21: INITIALIZE THE PAGE
+    */
+
+    displayFields();
+
+    displayFilters();
+
+    updateSummary();
+
+</script>
+
+</body>
+</html>
